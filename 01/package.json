@@ -1,0 +1,19 @@
+{
+  "name": "desafio1",
+  "version": "1.0.0",
+  "description": "Primeiro desafio",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "desafio1"
+  ],
+  "author": "Fábio Pereira da Silva",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "nodemon": "^2.0.4"
+  }
+}
