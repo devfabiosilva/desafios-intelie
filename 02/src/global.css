@@ -1,0 +1,63 @@
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    outline: 0;
+    box-sizing: border-box;
+    font: 400 14px Sans Pro, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    --header-footer-background-color: #d7d8db;
+}
+
+body {
+    width: 100%;
+    height: 620px;
+}
+
+.app {
+    width: 100%;
+    height: 620px;
+}
+.title-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 7.5%;
+    background-color: var(--header-footer-background-color);
+}
+
+.title {
+    font-size: 22px;
+    margin-left: 32px;
+}
+
+.resizable-fragment {
+    min-height: 210px;
+}
+
+.footer-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 7.5%;
+    background-color: var(--header-footer-background-color);
+    position: fixed;
+    bottom: 0px;
+}
+
+.generate-graph-function-btn {
+    cursor: pointer;
+    background-color: #017eff;
+    border-radius: 4px;
+    color: #e9f6fb;
+    border: none;
+    font-weight: 400;
+    padding: 8px;
+    margin-left: 22px;
+    transition: color 0.3s, background-color 0.3s;
+}
+
+.generate-graph-function-btn:hover {
+    background-color: #000edf;
+}
