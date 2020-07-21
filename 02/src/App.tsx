@@ -5,15 +5,27 @@ import ResizablePanels from "resizable-panels-react";
 import { connect } from 'react-redux';
 import Graphic from './components/Graphic';
 import Editor from './components/Editor';
-
+import { processData } from './util';
+import { GRAPHIC_DATA_ERROR, GRAPHIC_DATA } from './util/dataInterface';
+import { plotGraphic } from './action';
+//        bkcolor="#e1b12c"
 function App(props: any) {
+  function storeGraphicData() {
+    let data = processData(props.graphic_data.text);
+
+    if (data) {
+      if ((data as GRAPHIC_DATA_ERROR).error)
+        console.log(data);
+      else if (data !== null)
+        props.plotGraphic(data);
+    }
+  }
   return (
     <div className="app">
       <div className="title-container">
         <div className="title">Fábio's challenge</div>
       </div>
       <ResizablePanels
-        bkcolor="#e1b12c"
         displayDirection="column"
         width="100%"
         height="85%"
@@ -28,7 +40,7 @@ function App(props: any) {
       <div className="footer-container">
         <button 
           className="generate-graph-function-btn"
-          onClick={() => console.log(props.graphic_data.text)}
+          onClick={() => storeGraphicData()}
         >
           Generate graph
         </button>
@@ -44,6 +56,8 @@ const mapStateToProps = (state: any, ownProps: any) => ({
 });
 
 const mapDispatchToProps = (dispatch: any, ownProps: any) => ({
+
+  plotGraphic: (data: GRAPHIC_DATA[]) => dispatch(plotGraphic(data))
 
 });
 

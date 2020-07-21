@@ -1,6 +1,7 @@
 //@ts-ignore
 import { combineReducers, createStore } from 'redux';
-import { SET_DATA_STATE } from '../action';
+import { SET_DATA_STATE, PLOT_GRAPHIC } from '../action';
+import { GRAPHIC_DATA } from '../util/dataInterface';
 
 function saveEditorState(
     state = { text: "" },
@@ -16,9 +17,26 @@ function saveEditorState(
     }
 }
 
+function graphicData(
+    state: GRAPHIC_DATA[] = [],
+    action: any
+): GRAPHIC_DATA[]
+{
+
+    switch (action.type) {
+        case PLOT_GRAPHIC:
+            return action.data as GRAPHIC_DATA[];
+        
+        default:
+            return state;
+    }
+
+}
+
 const graphic_data_state = combineReducers(
     { 
-        saveEditorState
+        saveEditorState,
+        graphicData
     }
 );
 

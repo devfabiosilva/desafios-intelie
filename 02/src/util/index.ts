@@ -1,28 +1,40 @@
+
 import { GRAPHIC_DATA, GRAPHIC_DATA_ERROR } from "./dataInterface";
 
+function generateRandomColor(): string {
+    return '#00000000';
+}
+
 export function processData(text: string): GRAPHIC_DATA[]|GRAPHIC_DATA_ERROR|null {
-    let grapic_plot: GRAPHIC_DATA[];
+    let graphic_plot: GRAPHIC_DATA[] = [];
     let text_split = text.split('\n');
     let parsed_json: any;
     let line_number: number;
-    let timestamp = undefined, begin_timestamp = undefined, end_timestamp = undefined;
+    let data_timestamp: number;
+    let timestamp: any = undefined, begin_timestamp = undefined, end_timestamp = undefined;
     let span_timestamp = undefined;
-    let min_response_time = undefined, max_response_time = undefined;
+    let os_tmp: string, browser_tmp: string;
+    let min_response_time: any = undefined, max_response_time: any = undefined;
     let group_os = undefined, group_browser = undefined;
+    let min_response_tmp: any, max_response_tmp: any;
+    let group_min_response_time_already_exists: boolean;
+    let group_max_response_time_already_exists: boolean;
 
-    if (text_split.length)
+    if (!text_split.length)
         return null;
 
+    //console.log(text_split)
     line_number = 0;
 
-    for (let line of text_split) {
+    for (let line in text_split) {
+
         line_number++;
 
-        if (line.trim() === "")
+        if (text_split[line].trim() === "")
             continue;
 
         try {
-            parsed_json = JSON.parse(line);
+            parsed_json = JSON.parse(text_split[line]);
         } catch (e) {
             return {error: -1, reason: `Error parsing JSON at line ${line_number} with message ${e.message}`}
         }
@@ -30,11 +42,194 @@ export function processData(text: string): GRAPHIC_DATA[]|GRAPHIC_DATA_ERROR|nul
         if (!parsed_json.type)
             return {error: -2, reason: `Missing type at line ${line_number}`}
 
-        if (parsed_json.type === 'span') {
+        if (parsed_json.type === 'data') {
+
+            if (span_timestamp === undefined)
+                continue;
+
+            if (!parsed_json.timestamp)
+                return {error: -28, reason: `Missing timestamp in 'data'. Error at line ${line_number}`};
+
+            if (isNaN(parsed_json.timestamp))
+                return {error: -29, reason: `timestamp in 'data' is NaN. Error at line ${line_number}`};
+
+            if (parsed_json.timestamp>end_timestamp)
+                continue;
+
+            if (parsed_json.timestamp<begin_timestamp)
+                continue;
+
+            data_timestamp = parsed_json.timestamp;
+
+            os_tmp = parsed_json[group_os as string];
+
+            if (!os_tmp)
+                return {error: -30, reason: `Missing ${group_os} in data at line ${line_number}`};
+            
+            if (typeof(os_tmp) !== 'string')
+                return {error: -31, reason: `At line ${line_number} '${group_os}' is not a string`};
+
+            os_tmp = os_tmp.trim();
+        
+            if (!os_tmp.length)
+                return {error: -32, reason: `At line ${line_number} '${group_os}' has an empty string`};
+            
+            browser_tmp = parsed_json[group_browser as string];
+
+            if (!browser_tmp)
+                return {error: -33, reason: `Missing '${group_browser}' in data at line ${line_number}`};
+        
+            if (typeof(browser_tmp) !== 'string')
+                return {error: -34, reason: `At line ${line_number} '${browser_tmp}' is not a string`};
+            
+            browser_tmp = browser_tmp.trim();
+
+            if (!browser_tmp.length)
+                return {error: -35, reason: `At line ${line_number} '${browser_tmp}' has an empty string`};
+
+            min_response_tmp = parsed_json[min_response_time as string];
+
+            if (!min_response_tmp)
+                return {error: -36, reason: `At line ${line_number} '${min_response_time}' is not defined`};
+
+            if (isNaN(min_response_tmp))
+                return {error: -37, reason: `'${min_response_time}' is not a number`};
+
+            max_response_tmp = parsed_json[max_response_time as string];
+
+            if (!max_response_tmp)
+                return {error: -38, reason: `At line ${line_number} '${max_response_time}' is not defined`};
+            
+            if (isNaN(max_response_tmp))
+                return {error: -39, reason: `${max_response_time} is not a number`};
+
+            if (min_response_tmp>max_response_tmp)
+                return {error: -40, reason: `${min_response_time} is greater than ${max_response_time}`};
+
+            if (graphic_plot.length) {
+                group_min_response_time_already_exists = false;
+                group_max_response_time_already_exists = false;
+
+                graphic_plot.forEach((graphic) => {
+                    if ((graphic.os === os_tmp) && (graphic.browser === browser_tmp) && (graphic.select === (min_response_time as string))) {
+                        group_min_response_time_already_exists = true;
+                        graphic.data.push({
+                            //x: data_timestamp,
+                            x: timestampToString(data_timestamp - timestamp),
+                            y: min_response_tmp
+                        });
+                    }
+
+                    if ((graphic.os === os_tmp) && (graphic.browser === browser_tmp) && (graphic.select === (max_response_time as string))) {
+                        group_max_response_time_already_exists = true;
+                        graphic.data.push({
+                            //x: data_timestamp,
+                            x: timestampToString(data_timestamp - timestamp),
+                            y: max_response_tmp
+                        });
+                    }
+                });
+
+                if (!group_min_response_time_already_exists) {
+                    graphic_plot.push({
+                        id: `${os_tmp} ${browser_tmp} ${min_response_time}`,
+                        color: generateRandomColor(),
+                        os: os_tmp,
+                        browser: browser_tmp,
+                        select: min_response_time as string,
+                        data: [
+                            {
+                                //x: data_timestamp,
+                                x: timestampToString(data_timestamp - timestamp),
+                                y: min_response_tmp
+                            }
+                        ]
+                    });
+                }
+
+                if (!group_max_response_time_already_exists) {
+                    graphic_plot.push({
+                        id: `${os_tmp} ${browser_tmp} ${max_response_time}`,
+                        color: generateRandomColor(),
+                        os: os_tmp,
+                        browser: browser_tmp,
+                        select: max_response_time as string,
+                        data: [
+                            {
+                                //x: data_timestamp,
+                                
+                                x: timestampToString(data_timestamp - timestamp),
+                                y: max_response_tmp
+                            }
+                        ]
+                    });
+                }
+
+            } else {
+                graphic_plot.push({
+                    id: `${os_tmp} ${browser_tmp} ${min_response_time}`,
+                    color: generateRandomColor(),
+                    os: os_tmp,
+                    browser: browser_tmp,
+                    select: min_response_time as string,
+                    data: [
+                        {
+                            //x: data_timestamp,
+                            x: timestampToString(data_timestamp - timestamp),
+                            y: min_response_tmp
+                        }
+                    ]
+                });
+
+                graphic_plot.push({
+                    id: `${os_tmp} ${browser_tmp} ${max_response_time}`,
+                    color: generateRandomColor(),
+                    os: os_tmp,
+                    browser: browser_tmp,
+                    select: max_response_time as string,
+                    data: [
+                        {
+                            //x: data_timestamp,
+                            x: timestampToString(data_timestamp - timestamp),
+                            y: max_response_tmp
+                        }
+                    ]
+                });
+            }
+        } else if (parsed_json.type === 'span') {
 
             if (timestamp === undefined)
                 return {error: -19, reason: `You must begin command with type: 'start'`};
-            // To do later ...
+            
+            if (!parsed_json.timestamp)
+                return {error: -20, reason: `Missing span timestamp at line ${line_number}`};
+        
+            if (span_timestamp !== undefined)
+                return {error: -21, reason: `Redefinition of span timestamp at line ${line_number}`};
+            
+            if (isNaN(parsed_json.timestamp))
+                return {error: -22, reason: `'span' timestamp is NaN. Error at line ${line_number}`};
+
+            span_timestamp = parsed_json.timestamp;
+
+            if (!parsed_json.begin)
+                return {error: -23, reason: `Missing 'begin' in type 'span' at line ${line_number}`};
+            
+            if (isNaN(parsed_json.begin))
+                return {error: -24, reason: `'begin' time is NaN. Error at line ${line_number}`}
+
+            begin_timestamp = parsed_json.begin;
+
+            if (!parsed_json.end)
+                return {error: -25, reason: `Missing 'end' in type 'span' at line ${line_number}`};
+
+            if (isNaN(parsed_json.end))
+                return {error: -26, reason: `'end' timestamp is NaN. Error at line ${line_number}`};
+
+            end_timestamp = parsed_json.end;
+    
+            if (begin_timestamp >= end_timestamp)
+                return {error: -27, reason: `'end' timestamp must be greater than 'begin' timestamp. Error at line ${line_number}`};
 
         } else if (parsed_json.type === 'start') {
             
@@ -107,7 +302,30 @@ export function processData(text: string): GRAPHIC_DATA[]|GRAPHIC_DATA_ERROR|nul
             if (!group_browser.length)
                 return {error: -18, reason: `'group' element 1 is empty string. Error at line ${line_number}`};
 
-        }
+        } else if (parsed_json.type === 'stop') {
+
+            timestamp = undefined;
+            begin_timestamp = undefined;
+            end_timestamp = undefined;
+            span_timestamp = undefined;
+
+        } else
+            return {error: -41, reason: `Invalid type command at line ${line_number}`};
     }
+
+    if (graphic_plot.length)
+        return graphic_plot;
+    
     return null;
+}
+
+function timestampToString(value: number) {
+    let date = new Date(value);
+    let options = {
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: false,
+        timeZone: 'GMT' 
+    };
+    return new Intl.DateTimeFormat('default', options).format(date);
 }

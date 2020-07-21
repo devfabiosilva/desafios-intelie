@@ -11,19 +11,19 @@ require('codemirror/mode/xml/xml');
 require('codemirror/mode/javascript/javascript');
 
 function Editor(props: any) {
+  //      value={"//Insert your graphic data here"}
   return (
     <CodeMirror
-      value={"//Insert your graphic data here"}
       options={{
         mode: 'javascript',
         theme: 'material',
         lineNumbers: true,
       }}
       onBeforeChange={(editor, data, value) => {
-        //props.saveData(value);
+        props.saveData(value);
       }}
       onChange={(editor, data, value) => {
-
+        //props.saveData(value);
       }}
     />
   );
