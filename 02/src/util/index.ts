@@ -1,9 +1,7 @@
 
 import { GRAPHIC_DATA, GRAPHIC_DATA_ERROR } from "./dataInterface";
 
-function generateRandomColor(): string {
-    return '#00000000';
-}
+const MAX_NUMBER_OF_GRAPHICS = 8;
 
 export function processData(text: string): GRAPHIC_DATA[]|GRAPHIC_DATA_ERROR|null {
     let graphic_plot: GRAPHIC_DATA[] = [];
@@ -12,6 +10,7 @@ export function processData(text: string): GRAPHIC_DATA[]|GRAPHIC_DATA_ERROR|nul
     let line_number: number;
     let data_timestamp: number;
     let timestamp: any = undefined, begin_timestamp = undefined, end_timestamp = undefined;
+    let stop_timestamp: any = undefined;
     let span_timestamp = undefined;
     let os_tmp: string, browser_tmp: string;
     let min_response_time: any = undefined, max_response_time: any = undefined;
@@ -23,7 +22,6 @@ export function processData(text: string): GRAPHIC_DATA[]|GRAPHIC_DATA_ERROR|nul
     if (!text_split.length)
         return null;
 
-    //console.log(text_split)
     line_number = 0;
 
     for (let line in text_split) {
@@ -109,12 +107,10 @@ export function processData(text: string): GRAPHIC_DATA[]|GRAPHIC_DATA_ERROR|nul
             if (graphic_plot.length) {
                 group_min_response_time_already_exists = false;
                 group_max_response_time_already_exists = false;
-
-                graphic_plot.forEach((graphic) => {
+                for (let graphic of graphic_plot) {
                     if ((graphic.os === os_tmp) && (graphic.browser === browser_tmp) && (graphic.select === (min_response_time as string))) {
                         group_min_response_time_already_exists = true;
                         graphic.data.push({
-                            //x: data_timestamp,
                             x: timestampToString(data_timestamp - timestamp),
                             y: min_response_tmp
                         });
@@ -123,17 +119,15 @@ export function processData(text: string): GRAPHIC_DATA[]|GRAPHIC_DATA_ERROR|nul
                     if ((graphic.os === os_tmp) && (graphic.browser === browser_tmp) && (graphic.select === (max_response_time as string))) {
                         group_max_response_time_already_exists = true;
                         graphic.data.push({
-                            //x: data_timestamp,
                             x: timestampToString(data_timestamp - timestamp),
                             y: max_response_tmp
                         });
                     }
-                });
+                }
 
                 if (!group_min_response_time_already_exists) {
                     graphic_plot.push({
-                        id: `${os_tmp} ${browser_tmp} ${min_response_time}`,
-                        color: generateRandomColor(),
+                        id: capitalizeLetters(`${os_tmp} ${browser_tmp} ${min_response_time}`),
                         os: os_tmp,
                         browser: browser_tmp,
                         select: min_response_time as string,
@@ -149,15 +143,12 @@ export function processData(text: string): GRAPHIC_DATA[]|GRAPHIC_DATA_ERROR|nul
 
                 if (!group_max_response_time_already_exists) {
                     graphic_plot.push({
-                        id: `${os_tmp} ${browser_tmp} ${max_response_time}`,
-                        color: generateRandomColor(),
+                        id: capitalizeLetters(`${os_tmp} ${browser_tmp} ${max_response_time}`),
                         os: os_tmp,
                         browser: browser_tmp,
                         select: max_response_time as string,
                         data: [
                             {
-                                //x: data_timestamp,
-                                
                                 x: timestampToString(data_timestamp - timestamp),
                                 y: max_response_tmp
                             }
@@ -167,8 +158,7 @@ export function processData(text: string): GRAPHIC_DATA[]|GRAPHIC_DATA_ERROR|nul
 
             } else {
                 graphic_plot.push({
-                    id: `${os_tmp} ${browser_tmp} ${min_response_time}`,
-                    color: generateRandomColor(),
+                    id: capitalizeLetters(`${os_tmp} ${browser_tmp} ${min_response_time}`),
                     os: os_tmp,
                     browser: browser_tmp,
                     select: min_response_time as string,
@@ -182,8 +172,7 @@ export function processData(text: string): GRAPHIC_DATA[]|GRAPHIC_DATA_ERROR|nul
                 });
 
                 graphic_plot.push({
-                    id: `${os_tmp} ${browser_tmp} ${max_response_time}`,
-                    color: generateRandomColor(),
+                    id: capitalizeLetters(`${os_tmp} ${browser_tmp} ${max_response_time}`),
                     os: os_tmp,
                     browser: browser_tmp,
                     select: max_response_time as string,
@@ -302,7 +291,21 @@ export function processData(text: string): GRAPHIC_DATA[]|GRAPHIC_DATA_ERROR|nul
             if (!group_browser.length)
                 return {error: -18, reason: `'group' element 1 is empty string. Error at line ${line_number}`};
 
+            stop_timestamp = undefined;
+
         } else if (parsed_json.type === 'stop') {
+
+            stop_timestamp = parsed_json.timestamp;
+
+            if (!parsed_json.timestamp)
+                return {error: -42, reason: `Missing stop timestamp at line ${line_number}`};
+        
+            if (isNaN(stop_timestamp))
+                return {error: -43, reason: `Stop timestamp at line ${line_number} is not a number`};
+
+            if (timestamp !== undefined)
+                if (timestamp>stop_timestamp)
+                    return {error: -44, reason: `Stop timestamp is lower than start timestamp`};
 
             timestamp = undefined;
             begin_timestamp = undefined;
@@ -313,10 +316,13 @@ export function processData(text: string): GRAPHIC_DATA[]|GRAPHIC_DATA_ERROR|nul
             return {error: -41, reason: `Invalid type command at line ${line_number}`};
     }
 
-    if (graphic_plot.length)
-        return graphic_plot;
+    if (!graphic_plot.length)
+        return null;
+
+    if (graphic_plot.length > MAX_NUMBER_OF_GRAPHICS)
+        return {error: -42, reason: `Number of graphics in data = ${graphic_plot.length} exceeds MAX_NUMBER_OF_GRAPHICS = ${MAX_NUMBER_OF_GRAPHICS}`};
     
-    return null;
+    return graphic_plot;
 }
 
 function timestampToString(value: number) {
@@ -328,4 +334,25 @@ function timestampToString(value: number) {
         timeZone: 'GMT' 
     };
     return new Intl.DateTimeFormat('default', options).format(date);
+}
+
+function capitalizeLetters(text: string): string {
+    let textSplitSpaces: any;
+    let textSplitUnderline: any;
+    let wordsSplitted: string = "";
+
+    if (!text.length)
+        return text;
+
+    textSplitSpaces = text.split(' ');
+
+    for (let space in textSplitSpaces) {
+        textSplitUnderline = textSplitSpaces[space].split('_');
+        for (let underline in textSplitUnderline)
+            wordsSplitted += textSplitUnderline[underline][0].toUpperCase() + textSplitUnderline[underline].slice(1) + " ";
+
+    }
+
+    return wordsSplitted;
+
 }

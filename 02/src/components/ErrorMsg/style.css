@@ -1,0 +1,17 @@
+.error-msg-container {
+    display: inline;
+    align-items: center;
+}
+
+.error-msg-reason,
+.error-msg-title {
+    color: #b30e40;
+    margin-top: 25px;
+    width: 100%;
+    text-align: center;
+    font-size: 28px;
+}
+
+.error-msg-reason {
+    width: 100%;
+}

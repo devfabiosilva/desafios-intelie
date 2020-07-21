@@ -1,8 +1,7 @@
 import React from 'react';
 //@ts-ignore
 import { connect } from 'react-redux';
-import { UnControlled as CodeMirror } from 'react-codemirror2';
-//import 'codemirror/lib/codemirror.css';
+import { Controlled as CodeMirror } from 'react-codemirror2';
 import './codemirror.css'; // Codemirror modified
 import 'codemirror/theme/material.css';
 import './style.css';
@@ -11,9 +10,9 @@ require('codemirror/mode/xml/xml');
 require('codemirror/mode/javascript/javascript');
 
 function Editor(props: any) {
-  //      value={"//Insert your graphic data here"}
   return (
     <CodeMirror
+      value={ props.graphic_data.text }
       options={{
         mode: 'javascript',
         theme: 'material',
@@ -21,9 +20,7 @@ function Editor(props: any) {
       }}
       onBeforeChange={(editor, data, value) => {
         props.saveData(value);
-      }}
-      onChange={(editor, data, value) => {
-        //props.saveData(value);
+        // Problem solved! Ref => https://developer.aliyun.com/mirror/npm/package/react-codemirror2
       }}
     />
   );
