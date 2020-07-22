@@ -1,7 +1,7 @@
 # Challenge 3
 
 <p align="center">
-  <img src="../docs/images/img01.png">
+  <img src="https://github.com/devfabiosilva/desafios-intelie/blob/master/docs/images/img01.png">
 </p>
 
 ## Challenge description
@@ -23,9 +23,13 @@ yarn start
 ## Technologies
 
 **Redux**
+
 **Nivo**
+
 **react-codemirror2**
+
 **resizable-panels-react**
+
 **Typescript**
 
 ## Made with :purple_heart: by Fábio Pereira
