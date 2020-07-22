@@ -3,6 +3,9 @@ import { combineReducers, createStore } from 'redux';
 import { SET_DATA_STATE, PLOT_GRAPHIC, SEND_ERROR_MESSAGE } from '../action';
 import { GRAPHIC_DATA, GRAPHIC_DATA_ERROR } from '../util/dataInterface';
 
+/**
+ * All text changing are stored in this state
+ */
 function saveEditorState(
     state = { text: "" },
     action: any
@@ -17,6 +20,10 @@ function saveEditorState(
     }
 }
 
+/**
+ * 
+ * All successfull data loaded from text in function processData() in ./util/index.ts is stored here
+ */
 function graphicData(
     state: GRAPHIC_DATA[] = [],
     action: any
@@ -32,7 +39,9 @@ function graphicData(
     }
 
 }
-
+/**
+ * Last error from text processing data in function processData() in ./util/index.ts is stored here
+ */
 export function errorMsg(
     state: GRAPHIC_DATA_ERROR|null = null,
     action: any

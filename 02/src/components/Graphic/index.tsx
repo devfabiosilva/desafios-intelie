@@ -3,7 +3,11 @@ import { ResponsiveLine } from '@nivo/line';
 // @ts-ignore
 import { connect } from 'react-redux';
 import './style.css';
-
+/**
+ *  Graphic component.
+ * If Data is parsed successfully from Codemirror text, then it loads all data stored in props.myData 
+ *
+ */
 function Graphic(props: any) {
     return (
       <div className="graphic-container">

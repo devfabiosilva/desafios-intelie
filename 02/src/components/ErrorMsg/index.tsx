@@ -2,7 +2,10 @@ import React from 'react';
 //@ts-ignore
 import { connect } from 'react-redux';
 import './style.css';
-
+/**
+ * This component shows error if occurs
+ * It loads last error stored in React Redux
+ */
 export function ErrorMessage(props: any) {
     return (
         <div className="error-msg-container">
@@ -18,7 +21,7 @@ export function ErrorMessage(props: any) {
 
 const mapStateToProps = (state: any, ownProps: any) => ({
 
-    graphicErrorMessage: state.errorMsg
+    graphicErrorMessage: state.errorMsg // Get last error message
 
 });
   

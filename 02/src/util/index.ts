@@ -1,8 +1,23 @@
 
 import { GRAPHIC_DATA, GRAPHIC_DATA_ERROR } from "./dataInterface";
 
+/** Configurable max number of graphics to plot */
 const MAX_NUMBER_OF_GRAPHICS = 8;
 
+/**
+ * This function get all texts from CodemMirror editor and parse to GRAPHIC_DATA[] structure to send to nivo library graphics
+ * 
+ * It:
+ * 1- Splits line numbers
+ * 2- Parse each line to JSON
+ * 3- Process each parameter in type sctructure
+ * 4- Returns if success Graphic data in GRAPHIC_DATA structure
+ * 
+ * On error returns:
+ *  GRAGRAPHIC_DATA_ERROR
+ * 
+ * Or null if no data is inserted in text
+ */
 export function processData(text: string): GRAPHIC_DATA[]|GRAPHIC_DATA_ERROR|null {
     let graphic_plot: GRAPHIC_DATA[] = [];
     let text_split = text.split('\n');
@@ -164,7 +179,6 @@ export function processData(text: string): GRAPHIC_DATA[]|GRAPHIC_DATA_ERROR|nul
                     select: min_response_time as string,
                     data: [
                         {
-                            //x: data_timestamp,
                             x: timestampToString(data_timestamp - timestamp),
                             y: min_response_tmp
                         }
@@ -324,7 +338,10 @@ export function processData(text: string): GRAPHIC_DATA[]|GRAPHIC_DATA_ERROR|nul
     
     return graphic_plot;
 }
-
+/**
+ * 
+ * Convert timestamp to string type HH:MM
+ */
 function timestampToString(value: number) {
     let date = new Date(value);
     let options = {
@@ -336,6 +353,11 @@ function timestampToString(value: number) {
     return new Intl.DateTimeFormat('default', options).format(date);
 }
 
+/**
+ *  Captilize letters
+ * Take all words and UpperCase all its prefixes given a space or underline 
+ *
+ */
 function capitalizeLetters(text: string): string {
     let textSplitSpaces: any;
     let textSplitUnderline: any;

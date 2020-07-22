@@ -10,37 +10,41 @@ import ErrorMessage from './components/ErrorMsg';
 import { GRAPHIC_DATA_ERROR, GRAPHIC_DATA } from './util/dataInterface';
 import { plotGraphic, sendErrorMessage, setDataState } from './action';
 import { EXAMPLE1, EXAMPLE2 } from './util/examples';
-
+/**
+ * Main App function
+ */
 function App(props: any) {
 
+  /**
+   * 
+   * Load examples function to plot it data
+   */
   function loadExample(exampleText: string) {
     let data;
     
-    props.saveData(exampleText);
-    data = processData(exampleText);
+    props.saveData(exampleText); // Save selected example to Redux State
+    data = processData(exampleText); // Process data from selected example
 
-    props.sendErrorMessage(null);
+    props.sendErrorMessage(null); // Clear all error message
 
     if (data) {
       if ((data as GRAPHIC_DATA_ERROR).error) {
-        console.log(data)
-        props.sendErrorMessage(data);
+        props.sendErrorMessage(data); // If error, enable ErrorMsg component to show processData() error
       } else
-        props.plotGraphic(data);
+        props.plotGraphic(data); // If Success return parsed data to Nivo Graphics
     }
   }
 
   function storeGraphicData() {
-    let data = processData(props.graphic_data.text);
+    let data = processData(props.graphic_data.text); // Extract text data from Redux State
 
-    props.sendErrorMessage(null);
+    props.sendErrorMessage(null); // Clear all previous error
 
-    if (data) {
-      if ((data as GRAPHIC_DATA_ERROR).error) {
-        console.log(data)
+    if (data) { // If data exists
+      if ((data as GRAPHIC_DATA_ERROR).error) { // If error, enable ErrorMsg component to show processData() error
         props.sendErrorMessage(data);
       } else
-        props.plotGraphic(data);
+        props.plotGraphic(data); // If success return parsed data to Nivo Graphics
     }
   }
 
@@ -87,16 +91,16 @@ function App(props: any) {
 
 const mapStateToProps = (state: any, ownProps: any) => ({
 
-  graphic_data: state.saveEditorState,
-  graphicErrorMessage: state.errorMsg
+  graphic_data: state.saveEditorState, // Get text from codemirror stored in Redux State
+  graphicErrorMessage: state.errorMsg // Error message (if occurs)
 
 });
 
 const mapDispatchToProps = (dispatch: any, ownProps: any) => ({
 
-  plotGraphic: (data: GRAPHIC_DATA[]) => dispatch(plotGraphic(data)),
-  sendErrorMessage: (errorMsg: GRAPHIC_DATA_ERROR|null) => dispatch(sendErrorMessage(errorMsg)),
-  saveData: (text: string) => dispatch(setDataState(text))
+  plotGraphic: (data: GRAPHIC_DATA[]) => dispatch(plotGraphic(data)), // Function plotGraphic
+  sendErrorMessage: (errorMsg: GRAPHIC_DATA_ERROR|null) => dispatch(sendErrorMessage(errorMsg)), //Trigger ErrorMsg when error in processData occurs
+  saveData: (text: string) => dispatch(setDataState(text)) //Get codemirror text and save all text to Redux
 
 });
 
