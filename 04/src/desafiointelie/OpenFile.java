@@ -10,9 +10,11 @@ public class OpenFile {
     private String errorMsg;
     private File fileObj;
     private FileWriter fileWriterObj;
+    private long lineCount;
     
     OpenFile(String fileName) {
         this.fileName = fileName;
+        this.lineCount = 0;
     }
     
     public boolean openFile() {
@@ -26,6 +28,7 @@ public class OpenFile {
             
             fileWriterObj = new FileWriter(fileObj, true);
             System.out.println("File ".concat(this.fileName).concat(" created successfully"));
+            System.out.println("Begin recording data");
             
         } catch (IOException e) {
             this.errorMsg = e.getMessage();
@@ -50,6 +53,7 @@ public class OpenFile {
     public boolean appendLine(String line) {
         try {
             this.fileWriterObj.append(line);
+            this.lineCount++;
         } catch (IOException e) {
             this.errorMsg = e.getMessage();
             return false;
@@ -59,5 +63,9 @@ public class OpenFile {
     
     public String getError() {
         return this.errorMsg;
+    }
+    
+    public long getLines() {
+        return this.lineCount;
     }
 }

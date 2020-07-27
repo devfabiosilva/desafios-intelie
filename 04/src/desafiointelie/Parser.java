@@ -149,7 +149,7 @@ public class Parser {
         return jsonResult.concat("}}");
     }
     
-    static private boolean isNumericPositiveInteger(String textValue) {
+    static public boolean isNumericPositiveInteger(String textValue) {
         Pattern pattern = Pattern.compile("\\d+");
         if (textValue == null) {
             return false; 
