@@ -2,6 +2,9 @@ package desafiointelie;
 
 import java.io.IOException;
 
+/**
+ * Main: Main class of this application.
+ */
 public class Main {
 
     public static void main(String[] args)  {
@@ -22,7 +25,14 @@ public class Main {
         }
         
         if (error < 0) {
-            System.out.println("SHOW HELP");
+            System.out.println(
+                    "\nApplication parameters:\n" +
+                    "\tOPTIONS:\n" +
+                    "\n\t\t-f <file>(Optional) Default: record.txt\n"+
+                    "\n\t\t-a <TCP address>(Optional) Default: 0.0.0.0\n"+
+                    "\n\t\t-p <PORT>(Optional) Default: 9999\n"+
+                    "\n\tEXAMPLE:\n" +
+                    "\n\t\tjava -jar desafioIntelie.jar -f myRecord.txt -a 0.0.1.2 -p 9998\n");
             return;
         }
         

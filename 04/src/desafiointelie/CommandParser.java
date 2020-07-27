@@ -2,20 +2,52 @@ package desafiointelie;
 
 import java.util.regex.Pattern;
 
-
+/**
+ * Parser of CLI input arguments
+ */
 public class CommandParser {
+   /**
+    * Default port number or CLI command parsed port number.
+    */
    public static int port = -1;
-   public static String fileName = null;
-   public static String addressName = null;
-   public static String errMsg = "";
    
+   /**
+    * Default file name or CLI command parsed file name.
+    */
+   public static String fileName = null;
+   
+   /**
+    * Default address or CLI command parsed address.
+    */
+   public static String addressName = null;
+   
+   /**
+    * Error message in class CommandParser.
+    */
+   public static String errMsg = "";
+
+   /**
+    * Checks if string address has a valid TCP address.
+    * <p>
+    * @return true if is valid otherwise returns false
+    */
    private static boolean validTCPAddress(String address) {
        // source: http://ipregex.com/
 
        Pattern pattern = Pattern.compile("(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)");
        return pattern.matcher(address).matches();
    }
-   //0 if success; > 0 if error; -1 if help
+
+   /**
+    * Parses valid command line (if exists)
+    * <p>
+    * @param args String array of input CLI arguments
+    * @param defaultAddress Default TCP address
+    * @param defaultPort Default port
+    * @param defaultFileName Default file name
+    * <p>
+    * @return 0 if success, greater than zero if error or less than zero if help (-h)
+    */
    public static int parseCommandLine(
            String[] args,
            String defaultAddress,
@@ -82,7 +114,9 @@ public class CommandParser {
                return -1;
            }
            
-           errMsg = "Unknown parameter: ".concat(args[i]);
+           errMsg = "Unknown parameter: "
+                   .concat(args[i])
+                   .concat(". Type -h for HELP.");
            return 6;
        }
        
