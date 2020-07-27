@@ -1,78 +1,185 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package desafiointelie;
 
-import java.io.IOException;
-import java.net.Socket;
-import java.util.Scanner;
-/*
-import java.util.logging.Level;
-import java.util.logging.Logger;
-*/
-/**
- *
- * @author fabiolinux
- */
-public class Parser {
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.regex.Pattern;
 
-    public static void teste() {
-        System.out.println("Teste");
-        try {
-            Socket client = new Socket("0.0.0.0", 9999);
-            System.out.println("Conectado");
-            Scanner receivedStream = new Scanner(client.getInputStream());
-            
-            while (receivedStream.hasNextLine()) {
-                System.out.println(receivedStream.nextLine());
-            }
-            
-            System.out.println("Closing stream ...");
-            
-            try {
-                receivedStream.close();
-                System.out.println("Stream closed");
-            } catch (Exception e) {
-                System.out.println("Error on closing connection ".concat(Parser.class.getName()));
-                System.out.println("Cause ".concat(e.getMessage()));
-                System.out.println("Trying to close connection ...");
-            }
-            
-            System.out.println("Closing connection ...");
-            
-            try {
-                client.close();
-                System.out.println("Closed");
-            } catch (IOException e) {
-                System.out.println("Could not close connection on ".concat(Parser.class.getName()));
-                System.out.println("Cause: ".concat(e.getMessage()));
-                return;
-            }
-            
-        } catch (IOException ex) {
-            //Logger.getLogger(Parser.class.getName()).log(Level.WARNING, null, ex);
-            System.out.println("Erro na classe: ".concat(Parser.class.getName()));
-            System.out.println("Com a mensagem: ".concat(ex.getMessage()));
-            return;
+public class Parser {
+    static public String errMsg = "";
+
+    static private String toMilliString(String dateInText) {
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+        long value;
+        int dateInTextLen = dateInText.length();
+
+        //https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html
+
+        if (dateInTextLen == 0) {
+            errMsg = "Date length is zero";
+            return null;
         }
-        System.out.println("Exiting success");
+        
+        try {
+            value = df.parse(dateInText.substring(0, dateInTextLen-1).concat("-0700")).toInstant().toEpochMilli();
+        } catch (ParseException e) {
+            errMsg = e.getMessage();
+            return null;
+        }
+        
+        return String.valueOf(value);
     }
 
-    /**
-     *
-     */
-    public static void teste2() {
-        Scanner scan= new Scanner(System.in);
+    
+    static public String toJsonStringLine(String textLine) {
+        String textLineSplitted[];
+        String metadataSplit[];
+        String jsonResult = "{\"timestamp\": ";
+        String tempString;
+        int i;
 
-        String text= scan.nextLine();
+        if (textLine.length() == 0) {
+            errMsg = "Error. CSV textline is null";
+            return null;
+        }
+        
+        textLineSplitted = textLine.split("[\\\"\\(|\\)\\\"|,|;]");
+        
+        if (textLineSplitted.length != 8) {
+            errMsg = "Malformatted CSV";
+            return null;
+        }
+        
+        tempString = toMilliString(textLineSplitted[0]);
+        
+        if (tempString == null)
+            return null;
+        
+        jsonResult = jsonResult.concat(tempString);
+        
+        if (!isNumericPositiveInteger(textLineSplitted[1])) {
+            errMsg = "Index has a non numeric positive integer value";
+            return null;
+        }
 
-        System.out.println(text);
+        jsonResult = jsonResult
+                .concat(", \"index\": ")
+                .concat(Integer.valueOf(textLineSplitted[1]).toString()); // Prune zeroes in left side
+        
+        if (!isDoubleValue(textLineSplitted[2])) {
+            errMsg = "signalwave has a non Double value";
+            return null;
+        }
+        
+        jsonResult = jsonResult
+                .concat(", \"signalwave\": ")
+                .concat(Double.valueOf(textLineSplitted[2]).toString()); // Prune zeroes
+        
+        jsonResult = jsonResult.concat(", \"metadata\": {");
+        
+        for (i = 0; i < 3; i++) {
+            metadataSplit = extractMetadata(textLineSplitted[5+i]);
+        
+            if (metadataSplit ==  null)
+                return null;
+        
+            if (i > 0)
+                jsonResult = jsonResult.concat(", ");
+                     
+            if (metadataSplit.length == 2) {
+                if (metadataSplit[0].compareTo("") != 0) {
+                   jsonResult = jsonResult.concat("\"")
+                           .concat(metadataSplit[0])
+                           .concat("\": \"");
+                   
+                   if (metadataSplit[1].compareTo("") != 0) {
+                       jsonResult = jsonResult.concat(metadataSplit[1])
+                               .concat("\"");
+                   } else {
+                       errMsg = "In metadataSplit index 1 has a empty string";
+                       return null;
+                   }
+                }
+            } else {
+                
+                if (metadataSplit.length != 5) {
+                    errMsg = "Wrong metadata size";
+                    return null;
+                }
+                
+                if (metadataSplit[0].compareTo("") == 0) {
+                    errMsg = "Can't find metadata attribute";
+                    return null;
+                }
+                
+                jsonResult = jsonResult.concat("\"")
+                        .concat(metadataSplit[0])
+                        .concat("\": [");
+                
+                if (metadataSplit[1].compareTo("") == 0) {
+                    errMsg = "Expected first value key in array";
+                    return null;
+                }
+                
+                jsonResult = jsonResult.concat("\"")
+                        .concat(metadataSplit[1])
+                        .concat("\", ");
+                
+                if (metadataSplit[2].compareTo("") == 0) {
+                    errMsg = "Expected second value key in array";
+                    return null;
+                }
+                
+                jsonResult = jsonResult.concat("\"")
+                        .concat(metadataSplit[2])
+                        .concat("\", ");
+             
+                if (metadataSplit[4].compareTo("") == 0) {
+                    errMsg = "Expected third value key in array";
+                    return null;
+                }
+                
+                jsonResult = jsonResult.concat("\"")
+                        .concat(metadataSplit[4])
+                        .concat("\"]");
+            }
+        
+        }
+        
+        return jsonResult.concat("}}");
+    }
+    
+    static private boolean isNumericPositiveInteger(String textValue) {
+        Pattern pattern = Pattern.compile("\\d+");
+        if (textValue == null) {
+            return false; 
+        }
+        return pattern.matcher(textValue).matches();
+    }
 
-
-        int num=scan.nextInt();
-
-        System.out.println(num);
+    static private boolean isDoubleValue(String textValue) {
+        Pattern pattern = Pattern.compile("-?\\d+(\\.\\d+)?");
+        if (textValue == null) {
+            return false; 
+        }
+        return pattern.matcher(textValue).matches();
+    }
+    
+    static private String[] extractMetadata(String metadataText) {
+        String[] metadata;
+        
+        if (metadataText.length() == 0) {
+            errMsg = "metadata text is zero";
+            return null;
+        }
+        
+        metadata = metadataText.split("[=|[^a-zA-Z0-9]]");
+        
+        if (metadata.length < 2) {
+            errMsg = "Missing parameter in metadata";
+            return null;
+        }
+        
+        return metadata;
     }
 }

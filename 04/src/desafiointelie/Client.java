@@ -12,13 +12,18 @@ public class Client {
      * @param args the command line arguments
      */
     public static void main(String[] args)  {
-        //System.out.println(Arrays.toString(args));
-        //Parser.teste();
-        String inputStream;
+
+        String inputStream, jsonResult;
         Connector con = new Connector("0.0.0.0", 9999);
         OpenFile fileStream = new OpenFile("teste.txt");
        
-        //Parser.teste2();
+        jsonResult = Parser.toJsonStringLine("2020-07-26T17:01:58.890Z,549,-0.156434,\"(a=1000100111000011,b=f48812ab-00ecaa11::f48812ab51eeaa33;c=f49903ba)\"");
+
+        if (jsonResult != null) {
+            System.out.println(jsonResult);
+        } else {
+            System.out.println(Parser.errMsg);
+        }
         
         if (!fileStream.openFile()) {
             System.out.println("Error when opening file: ".concat(fileStream.getError()));
@@ -51,6 +56,7 @@ public class Client {
             System.out.println(con.getError());
             System.out.println(con.getErrorMessage());
         }
+       
     }
-    
+   
 }

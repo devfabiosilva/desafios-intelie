@@ -3,9 +3,7 @@ package desafiointelie;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-/**
- *
- */
+
 public class OpenFile {
 
     private final String fileName;
