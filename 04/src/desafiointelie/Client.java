@@ -2,28 +2,17 @@ package desafiointelie;
 
 import java.io.IOException;
 
-/**
- *
- * @author Fabio Pereira
- */
 public class Client {
 
-    /**
-     * @param args the command line arguments
-     */
     public static void main(String[] args)  {
 
+        int line;
         String inputStream, jsonResult;
         Connector con = new Connector("0.0.0.0", 9999);
         OpenFile fileStream = new OpenFile("teste.txt");
        
-        jsonResult = Parser.toJsonStringLine("2020-07-26T17:01:58.890Z,549,-0.156434,\"(a=1000100111000011,b=f48812ab-00ecaa11::f48812ab51eeaa33;c=f49903ba)\"");
+        //jsonResult = Parser.toJsonStringLine("2020-07-26T17:01:58.890Z,549,-0.156434,\"(a=1000100111000011,b=f48812ab-00ecaa11::f48812ab51eeaa33;c=f49903ba)\"");
 
-        if (jsonResult != null) {
-            System.out.println(jsonResult);
-        } else {
-            System.out.println(Parser.errMsg);
-        }
         
         if (!fileStream.openFile()) {
             System.out.println("Error when opening file: ".concat(fileStream.getError()));
@@ -36,14 +25,26 @@ public class Client {
             return;
         }
         
+        line = 1;
+        
         try {
             while ((inputStream = con.readStream()) != null) {
-                System.out.println(inputStream);
-                if (!fileStream.appendLine(inputStream.concat("\n"))) {
+
+                jsonResult = Parser.toJsonStringLine(inputStream);
+                
+                if (jsonResult == null) {
+                    System.out.println("Ignoring line ".concat(String.valueOf(line)));
+                    System.out.println("Reason: ".concat(Parser.errMsg));
+                    continue;
+                }
+                
+                if (!fileStream.appendLine(jsonResult.concat("\n"))) {
                     System.out.println("Error. Can't append line: ".concat(fileStream.getError()));
                     System.out.println("Aborting ...");
                     break;
                 }
+                
+                line++;
             }
         } catch (IOException e) {
             System.out.println("Fatal error: ".concat(e.getMessage()));
@@ -57,6 +58,7 @@ public class Client {
             System.out.println(con.getErrorMessage());
         }
        
+        System.out.println("Recorded ".concat(String.valueOf(line).concat(" lines")));
     }
    
 }
