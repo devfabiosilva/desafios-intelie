@@ -38,6 +38,7 @@ public class Main {
         if (!con.connect('q')) {
             System.out.println(con.getError());
             System.out.println(con.getErrorMessage());
+            fileStream.closeFile();
             return;
         }
         

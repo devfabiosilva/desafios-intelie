@@ -5,9 +5,23 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.regex.Pattern;
 
+/** 
+  * Class containing utilities to parse input CSV stream line to JSON line.
+  */
 public class Parser {
+    /**
+     * Error description variable in Parser class.
+     * 
+     * All error description string is Parser class are stored here
+     */
     static public String errMsg = "";
 
+    /**
+     * Converts an ISO 8601 to Unix timestamp.
+     * 
+     * @param dateInText
+     * @return A valid timestamp if success or null if an error occurs
+     */
     static private String toMilliString(String dateInText) {
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
         long value;
@@ -30,7 +44,12 @@ public class Parser {
         return String.valueOf(value);
     }
 
-    
+    /**
+     * Parse CSV line contained specified params and parses to JSON string. 
+     *
+     * @param  textLine input text line
+     * @return      JSON string line if success or null if fails on parse
+    */
     static public String toJsonStringLine(String textLine) {
         String textLineSplitted[];
         String metadataSplit[];
@@ -148,7 +167,12 @@ public class Parser {
         
         return jsonResult.concat("}}");
     }
-    
+    /** 
+     * Checks if a string text contains a valid number greater or equal zero
+     * 
+     * @param textValue
+     * @return true is textValue has a valid positive integer number or false if text does not contain a valid positive number
+     */
     static public boolean isNumericPositiveInteger(String textValue) {
         Pattern pattern = Pattern.compile("\\d+");
         if (textValue == null) {
@@ -157,6 +181,12 @@ public class Parser {
         return pattern.matcher(textValue).matches();
     }
 
+    /** 
+     * Check is string text contains a Double value.
+     * 
+     * @param textValue String value
+     * @return true if textValue contains a valid Double value and false otherwise
+     */
     static private boolean isDoubleValue(String textValue) {
         Pattern pattern = Pattern.compile("-?\\d+(\\.\\d+)?");
         if (textValue == null) {
@@ -165,6 +195,12 @@ public class Parser {
         return pattern.matcher(textValue).matches();
     }
     
+    /**
+     * Internal function to extract metadata from parameter attribute.
+     * 
+     * @param metadataText Text containing metadata
+     * @return String array of pre-formatted metadata or null if an error occurs
+     */
     static private String[] extractMetadata(String metadataText) {
         String[] metadata;
         
